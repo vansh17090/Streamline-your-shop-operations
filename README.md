@@ -76,29 +76,8 @@ json
     ]
   }
 }
-Security Note
-Important: This application stores passwords in plain text and is intended for educational purposes only. Do not use this for storing sensitive real-world data without implementing proper security measures such as password hashing.
-Error Handling
-The application includes robust error handling for:
-•	Invalid user inputs (automatically sets to default values)
-•	Corrupted JSON files (creates fresh data structure)
-•	Out-of-range record IDs
-•	Missing data files
-Future Enhancements
-Potential improvements could include:
-•	Password encryption and hashing
-•	Export data to CSV/PDF
-•	Graphical visualizations of health trends
-•	Goal setting and achievement tracking
-•	BMI calculation and health score
-•	Multi-language support
-•	Database integration for better scalability
-Contributing
-Feel free to fork this project and submit pull requests for any improvements.
-License
-This project is provided as-is for educational purposes.
-Author
-Created as a personal health tracking solution demonstrating Python fundamentals including file I/O, data structures, and user interaction.
+
+
 
 
 
