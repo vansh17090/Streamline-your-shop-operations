@@ -1,0 +1,50 @@
+{
+    "vaNSH": {
+        "password": "poop",
+        "profile": {
+            "name": "rastogi",
+            "age": 18,
+            "height": 50.0,
+            "weight": 56.0
+        },
+        "logs": []
+    },
+    "Ayush": {
+        "password": "123",
+        "profile": {
+            "name": "Ayush Bangali",
+            "age": 69,
+            "height": 21.0,
+            "weight": 21.0
+        },
+        "logs": [
+            {
+                "date": "2025-11-24",
+                "steps": 1234,
+                "sleep_hours": 2.0,
+                "calories": 2.0,
+                "water_liters": 2.0,
+                "avg_heart_rate": 2.0
+            }
+        ]
+    },
+    "Vansh": {
+        "password": "1245",
+        "profile": {
+            "name": "Vansh Rastogi",
+            "age": 18,
+            "height": 1.71,
+            "weight": 74.0
+        },
+        "logs": [
+            {
+                "date": "2025-11-24",
+                "steps": 10000,
+                "sleep_hours": 6.0,
+                "calories": 1200.0,
+                "water_liters": 5.0,
+                "avg_heart_rate": 120.0
+            }
+        ]
+    }
+}

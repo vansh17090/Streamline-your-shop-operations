@@ -1,0 +1,343 @@
+import json
+import os
+from datetime import datetime
+
+DATA_FILE = "health_data.json"
+
+
+def load_data():
+    """Load user data from JSON file, or return empty dict if file not found."""
+    if not os.path.exists(DATA_FILE):
+        return {}
+    try:
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        # If file is corrupted or empty, start fresh
+        return {}
+
+
+def save_data(data):
+    """Save user data to JSON file."""
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+
+def register_user(data):
+    """Register a new user with basic profile details."""
+    print("\n--- User Registration ---")
+    username = input("Enter a username: ").strip()
+
+    if username in data:
+        print("Username already exists. Try a different one.")
+        return data
+
+    password = input("Enter a password: ").strip()
+    name = input("Enter your full name: ").strip()
+    try:
+        age = int(input("Enter your age: "))
+    except ValueError:
+        print("Invalid age. Setting age = 0.")
+        age = 0
+
+    try:
+        height = float(input("Enter your height (in meters): "))
+    except ValueError:
+        print("Invalid height. Setting height = 0.0.")
+        height = 0.0
+
+    try:
+        weight = float(input("Enter your weight (in kg): "))
+    except ValueError:
+        print("Invalid weight. Setting weight = 0.0.")
+        weight = 0.0
+
+    # Each user entry contains profile and a list of daily logs
+    data[username] = {
+        "password": password,
+        "profile": {
+            "name": name,
+            "age": age,
+            "height": height,
+            "weight": weight
+        },
+        "logs": []  # list of metric entries
+    }
+
+    save_data(data)
+    print("Registration successful!")
+    return data
+
+
+def login_user(data):
+    """Authenticate user and return username if successful, else None."""
+    print("\n--- User Login ---")
+    username = input("Enter username: ").strip()
+    password = input("Enter password: ").strip()
+
+    if username in data and data[username]["password"] == password:
+        print(f"Login successful. Welcome, {data[username]['profile']['name']}!")
+        return username
+    else:
+        print("Invalid username or password.")
+        return None
+
+
+def log_metrics(data, username):
+    """Add a new log of daily health metrics for a user."""
+    print("\n--- Log Today's Health Metrics ---")
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    try:
+        steps = int(input("Enter steps walked today: "))
+    except ValueError:
+        print("Invalid steps. Setting steps = 0.")
+        steps = 0
+
+    try:
+        sleep_hours = float(input("Enter sleep duration (in hours): "))
+    except ValueError:
+        print("Invalid sleep duration. Setting sleep = 0.0.")
+        sleep_hours = 0.0
+
+    try:
+        calories = float(input("Enter calories consumed today: "))
+    except ValueError:
+        print("Invalid calories. Setting calories = 0.0.")
+        calories = 0.0
+
+    try:
+        water = float(input("Enter water intake (in liters): "))
+    except ValueError:
+        print("Invalid water intake. Setting water = 0.0.")
+        water = 0.0
+
+    try:
+        heart_rate = float(input("Enter average heart rate today (bpm): "))
+    except ValueError:
+        print("Invalid heart rate. Setting heart rate = 0.0.")
+        heart_rate = 0.0
+
+    entry = {
+        "date": today,
+        "steps": steps,
+        "sleep_hours": sleep_hours,
+        "calories": calories,
+        "water_liters": water,
+        "avg_heart_rate": heart_rate
+    }
+
+    data[username]["logs"].append(entry)
+    save_data(data)
+    print("Health metrics logged successfully.")
+
+
+def view_logs(data, username):
+    """Display all logged health metrics for the user."""
+    print("\n--- Your Health Logs ---")
+    logs = data[username]["logs"]
+
+    if not logs:
+        print("No logs found. Please add some entries.")
+        return
+
+    for idx, log in enumerate(logs):
+        print(f"\nRecord ID: {idx}")
+        print(f"  Date          : {log['date']}")
+        print(f"  Steps         : {log['steps']}")
+        print(f"  Sleep (hrs)   : {log['sleep_hours']}")
+        print(f"  Calories      : {log['calories']}")
+        print(f"  Water (liters): {log['water_liters']}")
+        print(f"  Avg Heart Rate: {log['avg_heart_rate']}")
+
+
+def update_log(data, username):
+    """Update an existing log entry by record ID."""
+    logs = data[username]["logs"]
+    if not logs:
+        print("No logs available to update.")
+        return
+
+    view_logs(data, username)
+    try:
+        record_id = int(input("\nEnter Record ID to update: "))
+    except ValueError:
+        print("Invalid ID.")
+        return
+
+    if record_id < 0 or record_id >= len(logs):
+        print("Record ID out of range.")
+        return
+
+    print("Enter new values (leave blank to keep old value):")
+    old_log = logs[record_id]
+
+    steps_inp = input(f"Steps [{old_log['steps']}]: ").strip()
+    sleep_inp = input(f"Sleep hours [{old_log['sleep_hours']}]: ").strip()
+    cal_inp = input(f"Calories [{old_log['calories']}]: ").strip()
+    water_inp = input(f"Water liters [{old_log['water_liters']}]: ").strip()
+    hr_inp = input(f"Avg Heart Rate [{old_log['avg_heart_rate']}]: ").strip()
+
+    # Update only if new values given
+    if steps_inp:
+        try:
+            old_log["steps"] = int(steps_inp)
+        except ValueError:
+            print("Invalid steps. Value unchanged.")
+    if sleep_inp:
+        try:
+            old_log["sleep_hours"] = float(sleep_inp)
+        except ValueError:
+            print("Invalid sleep. Value unchanged.")
+    if cal_inp:
+        try:
+            old_log["calories"] = float(cal_inp)
+        except ValueError:
+            print("Invalid calories. Value unchanged.")
+    if water_inp:
+        try:
+            old_log["water_liters"] = float(water_inp)
+        except ValueError:
+            print("Invalid water. Value unchanged.")
+    if hr_inp:
+        try:
+            old_log["avg_heart_rate"] = float(hr_inp)
+        except ValueError:
+            print("Invalid heart rate. Value unchanged.")
+
+    logs[record_id] = old_log
+    save_data(data)
+    print("Record updated successfully.")
+
+
+def delete_log(data, username):
+    """Delete a log entry by record ID."""
+    logs = data[username]["logs"]
+    if not logs:
+        print("No logs available to delete.")
+        return
+
+    view_logs(data, username)
+    try:
+        record_id = int(input("\nEnter Record ID to delete: "))
+    except ValueError:
+        print("Invalid ID.")
+        return
+
+    if record_id < 0 or record_id >= len(logs):
+        print("Record ID out of range.")
+        return
+
+    confirm = input("Are you sure you want to delete this record? (y/n): ").strip().lower()
+    if confirm == "y":
+        logs.pop(record_id)
+        save_data(data)
+        print("Record deleted successfully.")
+    else:
+        print("Deletion cancelled.")
+
+
+def summarize_activity(data, username):
+    """Compute summary statistics and classify activity level."""
+    logs = data[username]["logs"]
+    if not logs:
+        print("No logs found for summary.")
+        return
+
+    total_steps = sum(log["steps"] for log in logs)
+    total_sleep = sum(log["sleep_hours"] for log in logs)
+    total_cal = sum(log["calories"] for log in logs)
+    total_water = sum(log["water_liters"] for log in logs)
+    total_hr = sum(log["avg_heart_rate"] for log in logs)
+
+    n = len(logs)
+
+    avg_steps = total_steps / n
+    avg_sleep = total_sleep / n
+    avg_cal = total_cal / n
+    avg_water = total_water / n
+    avg_hr = total_hr / n
+
+    # Simple activity classification based on average steps
+    if avg_steps < 5000:
+        activity = "Sedentary"
+    elif 5000 <= avg_steps < 8000:
+        activity = "Lightly Active"
+    elif 8000 <= avg_steps < 10000:
+        activity = "Active"
+    else:
+        activity = "Very Active"
+
+    print("\n--- Summary & Activity Classification ---")
+    print(f"Number of records: {n}")
+    print(f"Average Steps       : {avg_steps:.2f}")
+    print(f"Average Sleep (hrs) : {avg_sleep:.2f}")
+    print(f"Average Calories    : {avg_cal:.2f}")
+    print(f"Average Water (L)   : {avg_water:.2f}")
+    print(f"Average Heart Rate  : {avg_hr:.2f}")
+    print(f"Activity Level      : {activity}")
+
+    # Optional: basic suggestion
+    if avg_sleep < 7:
+        print("Suggestion: Your average sleep is low. Try to get at least 7 hours of sleep.")
+    if avg_water < 2:
+        print("Suggestion: Increase your water intake to at least 2 liters per day.")
+
+
+def user_dashboard(data, username):
+    """Menu loop for logged-in user."""
+    while True:
+        print("\n===== User Dashboard =====")
+        print("1. Log today's health metrics")
+        print("2. View all logs")
+        print("3. Update a log")
+        print("4. Delete a log")
+        print("5. View summary & activity classification")
+        print("6. Logout")
+
+        choice = input("Enter your choice: ").strip()
+
+        if choice == "1":
+            log_metrics(data, username)
+        elif choice == "2":
+            view_logs(data, username)
+        elif choice == "3":
+            update_log(data, username)
+        elif choice == "4":
+            delete_log(data, username)
+        elif choice == "5":
+            summarize_activity(data, username)
+        elif choice == "6":
+            print("Logging out...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+
+def main():
+    data = load_data()
+
+    while True:
+        print("\n===== Personal Health Dashboard =====")
+        print("1. Register")
+        print("2. Login")
+        print("3. Exit")
+
+        choice = input("Enter your choice: ").strip()
+
+        if choice == "1":
+            data = register_user(data)
+        elif choice == "2":
+            username = login_user(data)
+            if username is not None:
+                user_dashboard(data, username)
+        elif choice == "3":
+            print("Exiting... Data saved.")
+            save_data(data)
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+
+if __name__ == "__main__":
+    main()
